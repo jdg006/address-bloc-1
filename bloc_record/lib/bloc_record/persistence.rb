@@ -30,6 +30,11 @@ require 'bloc_record/schema'
  
    module ClassMethods
      def create(attrs)
+      
+    if attrs.values.all? {|x| !x.nil? and !x.to_s.empty?} == false
+      return 1
+    end
+     
        attrs = BlocRecord::Utility.convert_keys(attrs)
        attrs.delete "id"
        vals = attributes.map { |key| BlocRecord::Utility.sql_strings(attrs[key]) }

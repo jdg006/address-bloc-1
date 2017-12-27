@@ -83,6 +83,48 @@ require 'sqlite3'
  
      rows_to_array(rows)
    end
+   
+   def method_missing(sym, *args, &block)
+     sym = sym.to_s
+     if (/find_by_/ =~ sym) == 0 
+       sym.slice!("find_by_")
+       find_by(sym.to_sym, args[0])
+      else
+       "no method #{sym}"
+     end
+   end
+   
+   def find_each(options = {})
+    
+    batch_size = options[:batch_size]
+    
+    if !batch_size
+     rows = connection.execute <<-SQL
+       SELECT #{columns.join ","} FROM #{table};
+     SQL
+    else
+      rows = connection.execute <<-SQL
+       SELECT #{columns.join ","} FROM #{table} LIMIT #{batch_size};
+       SQL
+    end
+      
+      rows_to_array(rows).each do |entry|
+       yield(entry)
+     end
+      
+   end
+   
+   def find_in_batches(options={})
+    start = options[:start]
+    batch_size = options[:batch_size]
+    
+    rows = connection.execute <<-SQL
+       SELECT #{columns.join ","} FROM #{table} LIMIT #{start}, #{batch_size};
+     SQL
+     
+    yield(rows_to_array(rows))
+   
+   end
 
    
    private

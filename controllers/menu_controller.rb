@@ -66,16 +66,21 @@ class MenuController
     print "Email: "
     email = gets.chomp
 
-    address_book.add_entry(name, phone, email)
-
-    system "clear"
-    puts "New entry created"
+    result = address_book.add_entry(name, phone, email)
+    
+    if result == 1
+      puts 'cannot pass empty or nil value'
+      yes_or_no
+    else
+      system "clear"
+      puts "New entry created"
+    end
   end
 
   def search_entries
     print "Search by name: "
     name = gets.chomp
-    match = Entry.find_by(:name, name)
+    match = Entry.find_by_name(name)
     system "clear"
     if match
       puts match.to_s
@@ -174,6 +179,24 @@ class MenuController
         puts entry.to_s
         search_submenu(entry)
     end
+  end
+  
+  def yes_or_no
+     puts 'would you like to try again?'
+      puts '1 for yes'
+      puts '2 for no'
+      
+      selection = gets.to_i
+      
+      case selection
+      when 1
+        create_entry
+      when 2
+        main_menu
+      else
+        puts "Not a valid input"
+        yes_or_no
+      end
   end
 end
 
