@@ -1,5 +1,11 @@
 module BlocRecord
    class Collection < Array
+       
+     def destroy_all
+         self.each do |entry|
+             Entry.destroy(entry.id)
+         end
+     end
      def update_all(updates)
        ids = self.map(&:id)
        self.any? ? self.first.class.update(ids, updates) : false
@@ -26,7 +32,7 @@ module BlocRecord
              end
          end
           
-         puts return_array
+          return_array
          
      end
      

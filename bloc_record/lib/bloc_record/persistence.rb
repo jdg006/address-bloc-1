@@ -46,15 +46,29 @@ require 'bloc_record/schema'
         update(nil, updates)
       end
       
-      def destroy_all(conditions_hash=nil)
-       if conditions_hash && !conditions_hash.empty?
-         conditions_hash = BlocRecord::Utility.convert_keys(conditions_hash)
-         conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
- 
-         connection.execute <<-SQL
-           DELETE FROM #{table}
-           WHERE #{conditions};
-         SQL
+      def destroy_all(*options)
+        
+       if options && !options.empty?
+          if options[0].class == Hash
+            conditions_hash = BlocRecord::Utility.convert_keys(options[0])
+            conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
+         
+          elsif options[0].class == String
+            
+            conditions = options[0]
+            
+          elsif options.count > 1
+            key = options[0].delete!('?=')
+            value = options[1]
+            conditions = "#{key}= '#{value}'"
+          else
+           puts "Not a valid input"
+          end
+            connection.execute <<-SQL
+              DELETE FROM #{table}
+              WHERE #{conditions};
+            SQL
+         
        else
        connection.execute <<-SQL
            DELETE FROM #{table}

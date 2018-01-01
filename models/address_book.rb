@@ -5,7 +5,7 @@ require 'bloc_record/base'
 class AddressBook < BlocRecord::Base
   
   def test 
-    Entry.where(name: "joe").not(phone_number: "555-5555")
+    Entry.destroy_all(name: 'Foo Three')
   end
   
   def add_entry(name, phone_number, email)
