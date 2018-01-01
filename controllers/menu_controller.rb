@@ -43,11 +43,19 @@ class MenuController
       when 5
         puts "Good-bye!"
         exit(0)
+      when 6
+        test
       else
         system "clear"
         puts "Sorry, that is not a valid input"
         main_menu
     end
+  end
+  
+  def test
+     
+    @address_book.test
+    
   end
   
   def select_address_book_menu

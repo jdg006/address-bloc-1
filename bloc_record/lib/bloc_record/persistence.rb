@@ -41,29 +41,40 @@ require 'bloc_record/schema'
       def update_all(updates)
         update(nil, updates)
       end
+      
+      def update_multiple(ids, updates)
+          ids.count.times do |x| 
+              update(ids[x], updates[x])
+          end
+      end
+      
        
       def update(ids, updates)
+          
+          
+           updates = BlocRecord::Utility.convert_keys(updates)
+           updates.delete "id"
+           updates_array = updates.map { |key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}" }
+           
+           if ids.class == Fixnum
+             where_clause = "WHERE id = #{ids};"
+           elsif ids.class == Array
+             where_clause = ids.empty? ? ";" : "WHERE id IN (#{ids.join(",")});"
+           else
+             where_clause = ";"
+           end
+           
+           connection.execute <<-SQL
+             UPDATE #{table}
+             SET #{updates_array * ","} #{where_clause}
+           SQL
+           true
+           
        
-       updates = BlocRecord::Utility.convert_keys(updates)
-       updates.delete "id"
-       
-       updates_array = updates.map { |key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}" }
-
-       if ids.class == Fixnum
-         where_clause = "WHERE id = #{ids};"
-       elsif ids.class == Array
-         where_clause = ids.empty? ? ";" : "WHERE id IN (#{ids.join(",")});"
-       else
-         where_clause = ";"
-       end
-       
-       connection.execute <<-SQL
-         UPDATE #{table}
-         SET #{updates_array * ","} #{where_clause}
-       SQL
-
-       true
       end 
+      
+      
+      
        
      def create(attrs)
       
@@ -84,5 +95,16 @@ require 'bloc_record/schema'
        data["id"] = connection.execute("SELECT last_insert_rowid();")[0][0]
        new(data)
      end
+     
+     def method_missing(sym, *args, &block)
+         sym = sym.to_s
+         if (/update_/ =~ sym) == 0 
+           sym.slice!("update_")
+           update_attribute(sym.to_sym, args[0])
+          else
+           "no method #{sym}"
+         end
+     end
+     
    end
  end
