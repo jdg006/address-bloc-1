@@ -7,4 +7,8 @@ module BlocRecord
    def self.database_filename
      @database_filename
    end
+   
+   def self.sql_type
+      @sql_type
+   end
  end

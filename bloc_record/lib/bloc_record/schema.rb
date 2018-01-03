@@ -1,5 +1,6 @@
 require 'sqlite3'
- require 'bloc_record/utility'
+require 'pg'
+require 'bloc_record/utility'
  
  module Schema
     
@@ -10,11 +11,30 @@ require 'sqlite3'
     def schema
      unless @schema
        @schema = {}
-       connection.table_info(table) do |col|
-         @schema[col["name"]] = col["type"]
-       end
+       
+      if connection.class == PG::Connection
+       
+         res = connection.query("select * from #{table}")
+         res.fields.each do |x|
+          oid = res.fnumber(x)
+          typename = connection.exec("SELECT format_type($1,$2)", [res.ftype(oid), res.fmod(oid)]).getvalue(0,0)
+          @schema[x] = typename
+         end
+         
+      elsif connection.class == SQLite3::Database
+        
+         connection.table_info(table) do |col|
+           @schema[col["name"]] = col["type"]
+         end
+        
+      else
+      end
+       
      end
-     @schema
+     
+    puts @schema
+    @schema
+    
     end
     
     def columns

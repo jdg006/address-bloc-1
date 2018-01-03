@@ -42,8 +42,8 @@ require 'sqlite3'
    def has_one(association)
        define_method(association) do
            row = self.class.connection.execute <<-SQL
-            SELECT * FROM #{association.to_s.singularize}
-            WHERE #{self.class.table}_id = #{self.id}
+            SELECT * FROM #{self.class.table}
+            WHERE #{association.to_s.singularize}_id = #{self.id}
             LIMIT 1
          SQL
          
